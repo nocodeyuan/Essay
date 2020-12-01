@@ -13,7 +13,54 @@
 
 * `el`: 字符串或节点对象。
 
-* `data`：对象或函数。
+* `data`：函数。
+
+* props：接收父组件传值。
+
+  * 可以接收对象或数组。
+
+  * 对象
+
+    * type
+    * default
+    * required
+
+    ```
+    props:{
+    	//基础类型检查
+    	propA: Number,
+    	//多个可能的类型
+    	propB: [String, number],
+    	//必须的字符串
+    	propC: {
+    		type: String,
+    		required: true
+    	},
+    	//默认值数字
+    	propD: {
+    		type: Number,
+    		default: 100
+    	},
+    	//带有默认的对象
+    	propE: {
+    		type: Object,
+    		default: function(){
+    			return {
+    				message: 'hello'
+    			}
+    		}
+    	},
+    	//自定义验证函数
+    	propF: {
+    		validator: function(value){
+    			return ['success', 'warning', 'danger'].indexOf(value) !== -1;
+    		}
+    	}，
+    	//通过新建类自定义类型
+    }
+    ```
+
+* `watch`: 监听数据的改变，以需要监听的属性为键名，值为自定义函数接收新值和旧值为参数。
 
 * `methods`：`[key: string]: function`
 
@@ -43,6 +90,8 @@
         
         * .prevent：阻止默认事件。
         
+        * .native：如果要监听根元素的原生事件，可以使用。
+        
         * .capture：添加事件监听器时使用事件捕获模式，即内部元素触发的事件先在此处理，然后才交由内部元素进行处理 。
         
         * .self：只当在 event.target 是当前元素自身时触发处理函数，即事件不是从内部元素触发。
@@ -52,35 +101,252 @@
         * .passive：<!-- 滚动事件的默认行为 (即滚动行为) 将会立即触发 -->
         			<!-- 而不会等待 `onScroll` 完成  -->
         			<!-- 这其中包含 `event.preventDefault()` 的情况 -->
-        			
+        	
         * 按键监听
         	.enter、.tab、.delete、.esc、.space
         
         * .exact：修饰符允许你控制由精确的系统修饰符组合触发的事件，ctrl只有ctrl，alt+shift不再触发。	
         
         * 鼠标监听
-        	.up、.down、.left、.right
         ```
+      
+    
+    	.up、.down、.left、.right
+    
+    
+  
+* `v-model`： 表单的双向数据。
+  
+  * v-model用于单选框，v-model绑定的属性和name属性功能相似。v-model可以获取表单的值。
+  
+  * 表单类型：
+  
+    text、radio单选框、checkbox复选框、select下拉单选/select multiple下拉多选。
+  
+  * 修饰符
+  
+    	.lazy文本框防抖策略、.number文本框内容转换number类型、.trim去除空格
+  
+* `v-for`： 列表渲染。
+  
+  * :key绑定唯一，优化diff算法性能。
+  
+* `v-once`：仅渲染一次。
+  
+* `v-show`：显示隐藏。
+  
+* `v-if`：条件渲染，比较消耗性能，建议经常操作使用`v-show`。
+  
+* `v-html`: 用于展示节点字符串。
 
-  * `v-model`： 双向数据。
+* `v-text`: 代替插值语法。
 
-  * `v-for`： 列表渲染。
+* `v-pre`：不解析插值语句。
 
-    * :key绑定唯一，优化diff算法性能。
+* `v-cloak`：用于延迟解析，绑定到根元素，在等待渲染过程中使用`css`设置元素不显示。
 
-  * `v-once`：仅渲染一次。
 
-  * `v-show`：显示隐藏。
 
-  * `v-if`：条件渲染，比较消耗性能，建议经常操作使用`v-show`。
+### 组件化
 
-  * `v-html`: 用于展示节点字符串。
+#### 使用组件
 
-  * `v-text`: 代替插值语法。
+* 创建组件构造器，Vue.extend({配置对象})
+* 注册组件，Vue.component(组件标签名，组件变量/组件构造器对象)**全局注册**，**局部注册**是在componets的属性中写键值对，键名为标签名，值为注册组件的构造器实例名。
+* 使用组件，标签形式。
+* **子组件注册名不可出现大写，子组件传值自定义事件名不可出现大写。**
+* 组件模板分离
+  * 写到script标签中，type设置为text/x-template，用id标识。
+  * 写到template标签中，类似。
+* 组件网络请求，网络请求在父组件进行。
 
-  * `v-pre`：不解析插值语句。
 
-  * `v-cloak`：用于延迟解析，绑定到根元素，在等待渲染过程中使用`css`设置元素不显示。
+
+
+#### 父子组件传值
+
+* 父传子，props
+
+```js
+//props验证
+props: {
+	//基础类型验证（null匹配任意类型）
+	propA: Number,
+	//多个可能的类型
+	propB: [String, Number],
+	//必填字符串
+	propC: {
+		type: String,
+		required: true
+	},
+	//带有默认值的数字
+	propD: {
+		type: Number,
+		default: 10
+	},
+	//带有默认值的对象
+	propE: {
+		type: Object,
+		default: function(){
+			return {
+				message: 'aa',
+				num: 100
+			}
+		}
+	},
+	//自定义验证函数
+	propF: {
+		validator: function(value){
+			return ['success','warning', 'danger'].indexOf(value) !== -1;
+		}
+	}
+}
+```
+
+* 子传父，$emit events自定义事件。
+
+```js
+//在子组件的事件中自定义事件将参数传给父组件，父组件通过绑定该事件触发执行。
+childClick(item){
+    this.$emit('item-click', item)
+}
+//v-on:'item-click(item)'
+parentClick(item){
+    console.log(item)
+}
+```
+
+* 案例
+
+```html
+<div id="app">
+    <div>
+        <childcomponent :list="newPro" @add-item="addItem"></childcomponent>
+    </div>
+</div>
+<template id="cpn">
+    <div>
+        <h1>{{msg}}</h1>
+        <ul>
+            <li v-for="item in list" :key="item">{{item}}</li>
+        </ul>
+        <input type="text" v-model="productItem" />
+        <button @click="sendItem">ADD</button>
+    </div>
+</template>
+```
+
+```js
+// 子组件声明
+const childcomponent = {
+    //子组件模板声明
+    template: "#cpn",
+    props: {
+        //父传子属性验证
+        list: {
+            type: Array,
+            default: [],
+            required: true,
+        },
+    },
+    data() {
+        return {
+            msg: "Hello VUE",
+            productItem: "",
+        };
+    },
+    methods: {
+        //子组件触发事件，自定义传值给父组件
+        sendItem() {
+            const item = this.productItem.trim();
+
+            if (item) {
+                console.log(item);
+                this.$emit("add-item", item);
+                this.productItem = "";
+            }
+        },
+    },
+};
+
+//父组件
+const app = new Vue({
+    el: "#app",
+    data() {
+        return {
+            newPro: ["衣服", "鞋子", "帽子"],
+        };
+    },
+    methods: {
+        //父元素绑定子元素自定义事件，触发获取传递参数进行操作
+        addItem(item) {
+            this.newPro.push(item);
+        },
+    },
+    //注册子组件
+    components: {
+        childcomponent,
+    },
+});
+```
+
+#### 父子组件的访问方式
+
+* 父组件访问子组件$children/$refs。
+  * $children通过访问数组下标获取组件对象。
+  * **$refs**通过在组件上设置ref属性，在通过this.refs.attrubite的值获取该组件。
+* 子组件访问父组件$parent。
+* 子组件访问根组件$root。
+
+
+
+#### slot插槽
+
+* **插槽的使用组件封装**：在组件封装时，模板预留slot标签（可在slot标签体中写标签默认值模板），在使用组件时，将自定义内容插入到组件标签内，使用插槽预留的位置。
+* **具名插槽**：设置插槽时，给定slot标签name属性，使用插槽时将需要替换到插槽位置的模板使用slot属性声明该插槽的name属性值，替换到相应的插槽位置。
+
+* **作用域插槽**：父组件使用slot结构，访问子组件的数据进行展示。
+
+  * 定义插槽在slot标签定义属性时使用v-bind绑定需要的数据。
+  * 父组件使用v-slot获取插槽传递的内容。支持结构语法`v-slot:default="{ user }"`。default可替换为插槽名。
+  * 缩写：`#`代替`v-slot:`，以上可写为`#default="{ user }"`。
+
+
+
+
+### Vue-Webpack
+
+* 配置vue文件加载`vue-loader`
+
+* 配置vue文件编译`vue-template-compiler`
+
+* 在`webpack.config.js`文件中配置vue文件路径和扩展名简写
+
+  ```js
+  module.exports = {
+      resolve: {
+          //文件扩展名简写，扩展名解析
+          extensions: ['.js', '/css', '.vue']，
+          //.vue文件预编译为.js文件
+   		alias: {
+          	"vue$": 'vue/lib/vue.esm.js'
+      	}
+      }
+  }
+  ```
+
+* 配置loader和plugins将js文件和模板文件压缩到生产目录下。
+
+#### 配置文件分离
+
+* webpack-merge，模块合并。
+
+
+
+### attrubite和property的区别
+
+* property是 DOM 对象中的属性，这里的 DOM 对象就是我们在 JavaScript 里常常提到的对象；
+* attribute 是HTML标签上的特性，它的值只能够是字符串；
 
 
 
@@ -101,7 +367,7 @@ map() （ES5新增）：参数接收回调，对数组每一项操作，返回�
 filter() （ES5新增）：参数接收条件回调，返回新数组。
 every() （ES5新增）：参数接收条件回调，返回布尔值。
 some() （ES5新增）：参数接收条件回调，返回布尔值。
-reduce()和 reduceRight() （ES5新增）：归并，参数接收回调（参数为数组前后项），返回 值。
+reduce()和 reduceRight() （ES5新增）：归并，参数接收回调（默认参数为数组初始前后项）和初始值，返回归并值。
 ```
 
 
