@@ -1,2 +1,2 @@
 # Essay
-easy notes about font-end.
+easy notes about font-end development.
