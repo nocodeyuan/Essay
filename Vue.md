@@ -306,11 +306,10 @@ const app = new Vue({
 * **具名插槽**：设置插槽时，给定slot标签name属性，使用插槽时将需要替换到插槽位置的模板使用slot属性声明该插槽的name属性值，替换到相应的插槽位置。
 
 * **作用域插槽**：父组件使用slot结构，访问子组件的数据进行展示。
-
-  * 定义插槽在slot标签定义属性时使用v-bind绑定需要的数据。
+* 定义插槽在slot标签定义属性时使用v-bind绑定需要的数据。
   * 父组件使用v-slot获取插槽传递的内容。支持结构语法`v-slot:default="{ user }"`。default可替换为插槽名。
   * 缩写：`#`代替`v-slot:`，以上可写为`#default="{ user }"`。
-
+  
 
 
 
@@ -340,6 +339,240 @@ const app = new Vue({
 #### 配置文件分离
 
 * webpack-merge，模块合并。
+
+
+
+### Vue-CLI
+
+#### vue-cli@2
+
+* 在cli@3的基础上安装cli@2
+
+  `npm i @vue/cli-init -g`
+
+* 初始化项目
+
+  `vue init webpack 项目名`
+
+#### vue-cli@3
+
+* 安装cli@3
+
+  `npm i @vue/cli -g`
+
+* 初始化项目
+
+  `vue create 项目名`
+
+
+
+### Vue-router
+
+#### 前端渲染与后端渲染
+
+* 后端渲染，服务器直接生产渲染好对应的HTML页面，返回给客户端展示。（jsp）
+* 前后端分离，静态资源服务器，数据接口服务器，用户访问网站请求静态资源服务器，静态资源执行到js数据请求时再访问数据接口。
+* SPA单页面富应用阶段，前端路由，选择渲染。页面组件映射。在前后端分离的基础上维护的一套映射关系。
+
+
+
+#### URL的hash和前端histroy
+
+* url改变页面不刷新
+
+  1. `location.hash=xxx`
+
+  2. `histroy.pushState(data,title,?url)`，栈结构，后进先出。显示栈顶的url。
+
+     `histroy.back()`，移除当前栈顶。
+
+     `histroy.forward()`，向前一步，相当于`histroy.go(1)`
+
+     `histroy.replaceState(data,title,?url)`，替换当前url，无法后退。
+
+     `histroy.go(-1)`相当于`histroy.back()`
+
+  3. hash路由和histroy的区别
+     * hash是location的属性，histroy是对象。
+     * hash可以直接改变url，histroy有许多操作url的方法。
+
+  
+
+#### 路由基本使用
+
+* 安装
+
+  `npm install vue-router --save`
+
+* 使用
+
+  1. 创建路由组件
+  2. 配置路由映射，组件与路径映射关系
+  3. 使用路由：通过`<router-link>`和`<router-view>`
+
+  ```js
+  //router.js
+  import VueRouter from 'vue-router'
+  import Vue from 'vue'
+  
+  //使用vue-router插件
+  Vue.use(VueRouter)
+  
+  //配置路由与组件映射关系
+  const router = new VueRouter({
+      //修改路由url传递方式
+      mode: 'hash/history',
+      routes: [
+          //配置path和component
+         {
+             path: '/xxx',
+             component: Xxx
+         },
+         {
+             path: '/yyy',
+             component: Yyy
+         } 
+      ]
+  })
+  
+  //导出路由
+  export default router
+  
+  //main.js -----------------------------------------
+  import Vue from 'vue'
+  import router from './router'
+  
+  //将路由挂载到vue实例
+  new Vue({
+      el: 'xx',
+      router,
+      render:xxx
+  })
+  
+  //App.vue -----------------------------------------
+  /**
+  router-link配置
+  	to属性，对应跳转到的路径path。
+      tag属性，改变link的默认渲染元素。
+      replace使用替换url。
+      active-class更改link激活状态的元素class属性名，可以在style中为激活元素添加样式，也可以在					router配置中修改linkActiveClass的值。
+  */
+  //router-view配置站位，替代path对应的组件。
+  ```
+
+#### 路由的默认路径
+
+* 默认不显示路由路径组件，在配置router映射时使用重定向`redirect: path`。一般重定向到首页路由。
+* 更改页面路径，
+  * 可以使用router-link+router-view，**标签跳转**
+  * 也可以使用`this.$router.push/replace(String: path)`，**代码跳转**
+
+#### 动态路由
+
+* ```vue
+  <template>
+  	<div>
+          <router-link to='home'>HOME</router-link>
+          <router-link to='about'>ABOUT</router-link>
+          <router-link :to='/user/'+userid>USER</router-link>
+      </div>
+  </template>
+  <script>
+  	export default {
+          data(){
+              return {
+                  //从请求中获取
+                  userid: xxx
+              }
+          },
+          computed: {
+              //获取路由参数 
+              userid(){
+                  return this.$route.params.userid
+              }
+          }
+      }
+  </script>
+  ```
+
+* 获取url参数
+
+  * $router和$route区别
+    * router是路由配置对象
+    * route是当前活跃的路由对象
+  * 获取
+    * `$route.params.userid`
+
+#### 路由懒加载
+
+* 在路由配置时，将component对应的组件写成函数，打包时路由会被拆分多个js文件，实现懒加载
+
+* ```js
+  {
+      path: 'home',
+      compomemt: () => import('../components/Home') 
+  }
+  ```
+
+#### 嵌套路由
+
+* 在配置映射中使用children属性，接收数组，可配值多个子路由对象，子路由的path不加/。
+* 再在需要添加子路由的组件中添加router-link+router-view，用于子路由占位。to属性使用完全路径。
+
+#### 路由传参
+
+1. 动态路由，以上。
+2. 配置router-link使用`v-bind:to="{path:'XXX', query={}}"`属性，获取使用`$route.query`
+3. 使用path字符串的地方一般也可以接收对象，可配置path，query传值。
+
+#### 导航守卫
+
+* 用于监听路由跳转
+
+* 在路由映射配置中可以定义元属性，meta接收对象，可定义对象字面量。
+
+* 路由跳转监测
+
+  ```js
+  //监测路由跳转实现自动更新title
+  router.beforeEach((to, from, next) => {
+      //to.matched[0].meta永远获取一级路由的元属性
+      document.title = to.matched[0].meta.title
+      //前置钩子必须执行的函数，执行下一步操作
+      next()
+  })
+  ```
+
+* 全局守卫
+
+  * beforeEach:(to, from, next)=>{}，前置守卫，跳转前回调
+  * afterEach:(to, from)=>{}，后置钩子，跳转后回调
+
+* 路由独享守卫
+
+  * 路由配置时使用
+  * beforeEnter:(to, from, next)=>{}
+
+* 组件内守卫
+
+  * 写在组件内部
+  * beforeRouteEnter，在渲染该组件的对应路由被confirm时调用，不能获取组件实例`this`
+  * beforeRouteUpdated，在当前路由改变，但是该组件被复用时调用，可以访问`this`。
+  * beforeRouteLeave，导航离开改组件对应的路由时使用，可以访问`this`。
+
+#### keep-alive
+
+* 保留组件状态
+
+* router-view被包在keep-alive组件内部时，所有路径匹配到的视图子组件都会被缓存。
+
+* keep-alive => activated/deactivated
+
+* 例外
+
+  include
+
+  `exclude="component1.name,component2.name"`，中间不可加空格，发生正则匹配的地方不可加空格。
 
 
 
