@@ -1,19 +1,19 @@
-## `Vue`学习笔记
+## Vue学习笔记
 
-### `MVVM`
+### MVVM
 
-*  `Model View ViewModel`
+*  Model View ViewModel
 
-* `Vue-MVVM`
-  * 视图：`VIEW: DOM`
-  * 模型：`MODEL: Javascript Objects`
-  * 视图模型`VIEWMODEL: VUEAPPLICATION(DOM Listeners&Data Bindings)`
+* Vue-MVVM
+  * 视图：VIEW: DOM
+  * 模型：MODEL: JavaScript Objects
+  * 视图模型 VIEWMODEL: VUEAPPLICATION(DOM Listeners&Data Bindings)
 
-### `OPTIONS`
+### OPTIONS
 
-* `el`: 字符串或节点对象。
+* el: 字符串或节点对象。
 
-* `data`：函数。
+* data：函数。
 
 * props：接收父组件传值。
 
@@ -60,11 +60,11 @@
     }
     ```
 
-* `watch`: 监听数据的改变，以需要监听的属性为键名，值为自定义函数接收新值和旧值为参数。
+* watch: 监听数据的改变，以需要监听的属性为键名，值为自定义函数接收新值和旧值为参数。
 
-* `methods`：`[key: string]: function`
+* methods：`[key: string]: function`
 
-* `compted`：计算属性，对需要展示数据的计算处理，作为属性调用，调用有缓存。
+* compted：计算属性，对需要展示数据的计算处理，作为属性调用，调用有缓存。
 
   * 对象，set和get方法。
     * set方法直接更改data的值。
@@ -340,6 +340,21 @@ const app = new Vue({
 
 * webpack-merge，模块合并。
 
+* 别名
+
+  ```js
+  resolve: {
+      extensions: ['.js', '.vue', '.css', '.json', '.less'],
+      alias: {
+          '@': 'src',
+          'components': 'src/components',
+              ...
+      }
+  }
+  ```
+
+  
+
 
 
 ### Vue-CLI
@@ -507,6 +522,24 @@ const app = new Vue({
 
 * 在路由配置时，将component对应的组件写成函数，打包时路由会被拆分多个js文件，实现懒加载
 
+* 懒加载报错
+
+  ```
+  npm install babel-plugin-syntax-dynamic-import -D
+  ```
+
+  在.babelrc文件中配置
+
+  ```json
+  {
+    "presets": ["env"],
+    "plugins": ["syntax-dynamic-import"],
+    "ignore": ["./src/lib/mui/js/*.js"]
+  }
+  ```
+
+  
+
 * ```js
   {
       path: 'home',
@@ -575,6 +608,244 @@ const app = new Vue({
   `exclude="component1.name,component2.name"`，中间不可加空格，发生正则匹配的地方不可加空格。
 
 
+
+### VueX
+
+#### 需要共享的数据
+
+* 用户的登录状态，用户名称，头像，地理位置信息，商品的收藏，购物车。
+
+#### 基本使用
+
+* 下载vuex插件
+
+  ```
+  npm install vuex -S
+  ```
+
+* 安装配置
+
+  ```js
+  import Vue from 'vue'
+  import Vuex from 'vuex'
+  
+  Vue.use(Vuex)
+  
+  const store = new Vuex.Store({
+      //定义state变量
+      state: {
+          msg: 'xxx'
+      },
+      //通过mutations修改state方便devTools记录溯源，定义方法
+      mutations: {
+          xxx(){
+              msg = 'xxx'
+          }
+      },
+      //定义异步操作
+      actions: {},
+      getters: {},
+      modules: {}
+  })
+  
+  export default store
+  
+  //使用数据
+  this.$store.state.msg//xxx
+  //修改数据,xxx为mutations中定义的操作
+  this.$store.commit('xxx')
+  ```
+
+  
+
+* 挂载到实例
+
+#### 核心概念
+
+* state
+
+  * 定义状态。
+
+* mutations
+
+  * 定义同步方法。
+
+  * 响应式：
+
+    * 提前在store中初始化属性。
+    * 使用Vue.set()/Vue.delete()等响应式方法操作数据结构设置添加的属性。
+
+  * 使用常量形式定义mutations
+
+    * `[COUNT](){}`
+
+  * 获取使用commit方法
+
+    * 参数：传入定义的函数名字符串，自定义参数。可在mutations定义的函数中调用该参数。
+
+      ```js
+      //定义payload(负载)
+      const store = new Vuex.Store({
+          mutations: {
+              count(value){
+                  return value * 2
+              }
+          }
+      })
+      
+      //使用
+      this.$store.commit('count', value: 10)
+      ```
+
+  * 提交风格
+
+    * 普通，参数列表，提交的是变量
+
+      ```js
+      this.$store.commit('count', value: 10)
+      ```
+
+    * 特殊，参数对象，提交的是对象
+
+      ```js
+      this.$store.commit({
+      	type: 'count',
+      	value: 10
+      })
+      ```
+
+      
+
+* actions
+
+  * 声明异步操作。
+
+  * 使用中，dispatch方法，接收actions中定义的异步处理函数为参数，可以传递多个参数。
+
+  * 定义中，函数，接收context和传递的参数，返回promise或其他。
+
+  * context.commit('mutations方法')，提交到mutations。
+
+    
+
+* getters
+
+  * 相当于单个组件中的computed。
+
+    ```js
+    const store = new Vuex.Store({
+        state:{ counter: 100 },
+        getters: {
+            //默认参数state, getters自身对象，接收其他参数使用闭包返回函数接收参数。
+            newCouter(state){
+                return state.counter * 2
+            }
+        }
+    })
+    
+    //使用
+    this.$store.getters.newCounter //200
+    ```
+
+* modules
+
+  * vuex使用单一状态树，只允许一个state。
+  * modules作用与抽离单独封装的store，将其插入到modules中。vuex自动将定义的模块装入state。
+  * 自定义模块
+    * 使用mutations/getters都和外部使用一样，getters可取三个参数state，getters当前的，rootState根state。
+    * actions中的context只能访问自身模块的mutations。当前context又包含rootState，rootGetters。
+
+### axios
+
+#### 全局配置
+
+* `axios.defaults.baseURL = 'xxx'`
+* `axios.defaults.timeout = xxxx`
+
+#### axios中的常见配置
+
+* 请求地址url
+* 请求类型method
+* 请求根路径baseURL
+* 请求前的数据处理`transformResquest:[function(data){}]`
+* 请求后的数据处理
+* 自定义请求头`headers:{'x-Requested-with': 'XMLHttpRequest'}`
+* URL查询对象get请求:`params:{}`
+* 查询对象序列化函数：`paramsSerializer:function(params){}`
+* request body用于post：`data: {key: 'xx'}`
+* 超时设置： `timeout: xxxx`
+* 跨域是否带token：`withCredentials: false`
+* 自定义请求处理：`adapter: function(resolve, reject, config){}`
+* 身份验证信息：`auth: {uname: '', pwd: 'xxx'}`
+* 响应的数据格式： `responseType: 'json/blob/document/arraybuffer/text/stream'`
+
+
+
+#### 应对不同后端接口
+
+* 创建axios实例
+
+  ```js
+  //独立配置
+  const instance_home = axios.create({
+      baseURL: 'xxx',
+      timeout: 10000，
+      moreConfigs
+  })
+  
+  const instance_about = axios.create({ ... })
+  ```
+
+#### 请求封装
+
+* 彻底封装第三方插件，避免重构大规模修改。
+
+  ```js
+  import axios from 'axios'
+  
+  export function request(config){
+      const instance = axios.create({
+          baseURL: '10.33.192.22:4000',
+          timeout: 5000
+      })
+      
+      return instance(config)
+  }
+  ```
+
+#### 拦截器
+
+* 请求拦截
+
+  * 用于展示请求中图标，在请求完成后关闭
+  * 判断登录状态，否则进行提示跳转等操作
+
+  ```js
+  instance.interceptors.request.use(config => {
+      //拦截配置信息，进行操作
+      console.log(config)
+      //返回请求配置
+      return config
+  }, err => {
+      console.log(err)
+  })
+  ```
+
+  
+
+* 响应拦截
+
+  ```js
+  instance.interceptors.response.use(result => {
+      console.log(result)
+      //需要返回结果
+      return result.data
+  }, err => {
+      console.log(err)
+  })
+  ```
+
+  
 
 ### attrubite和property的区别
 
