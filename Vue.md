@@ -90,7 +90,7 @@
         
         * .prevent：阻止默认事件。
         
-        * .native：如果要监听根元素的原生事件，可以使用。
+        * .native：如果要监听组件根元素的原生事件，可以使用。
         
         * .capture：添加事件监听器时使用事件捕获模式，即内部元素触发的事件先在此处理，然后才交由内部元素进行处理 。
         
@@ -378,6 +378,41 @@ const app = new Vue({
 * 初始化项目
 
   `vue create 项目名`
+
+#### 创建项目
+
+* cli创建项目
+
+* 划分目录结构。
+
+  * ```
+    common components/common&content network router store views
+    ```
+
+* css基础文件引入，normalize/base。
+
+* .editconfig和vue.config.js文件加入，代码风格和别名配置，在dom中使用别名需要加～符号。
+
+* 组件独立封装，组件内解耦。
+
+* better-scoll移动端滚动插件。上拉加载更多，回顶部。
+
+* 监听加载完成，`@load = '函数名'`
+
+* 获取组件内的元素，$el
+
+* 事件总线，在主文件中Vue的原型定义$bus，赋值为Vue实例。
+
+  ```
+  Vue.prototype.$bus = new Vue()
+  
+  //定义发布事件
+  this.$bus.$emit('事件名称')
+  //订阅事件
+  this.$bus.$on('事件名称', fn(){回调})
+  ```
+
+* vuex
 
 
 
